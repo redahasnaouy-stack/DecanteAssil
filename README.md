@@ -63,3 +63,9 @@ npm run preview -- --port 4173
 ```
 
 Les cinq catégories ont des produits issus des photos fournies. Logo transparent retouché à partir de la référence. Les polices Google ont des alternatives système si le service est indisponible.
+
+## Présentation de la boutique
+
+Interface crème et or inspirée des captures de référence fournies : logo centré, menu latéral, sections par catégorie et trois cartes produit par ligne sur ordinateur. Deux cartes par ligne sur mobile. Chaque carte propose le format et un ajout direct au panier. Le panier latéral regroupe les articles, les quantités et le formulaire de livraison (Casablanca ou autre ville). Les frais de livraison restent à confirmer sur WhatsApp ; aucun tarif du site de référence n’est appliqué automatiquement.
+
+Les descriptions sont dans `src/main.jsx`, les prix et les images du catalogue dans `public/catalog.json`. Le visuel de campagne `public/hero-perfume.png` a été retouché à partir d’une photo produit fournie ; les fiches conservent les photos originales du catalogue.
