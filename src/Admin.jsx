@@ -306,6 +306,7 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
             <label>
               Type
               <select
+                aria-label="Type"
                 value={form.type}
                 onChange={(e) => set("type", e.target.value)}
               >
@@ -317,12 +318,13 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
             <label>
               Genre
               <select
+                aria-label="Genre"
                 value={form.gender}
                 onChange={(e) => set("gender", e.target.value)}
               >
                 <option value="homme">Homme</option>
                 <option value="femme">Femme</option>
-                {form.type === "niche" && <option value="mixte">Mixte</option>}
+                <option value="mixte">Mixte</option>
               </select>
             </label>
             <label>

@@ -138,7 +138,7 @@ async function request(
     name: "Validation parfum",
     brand: "Validation",
     type: "decant",
-    gender: "femme",
+    gender: "mixte",
     price: 99,
     fullPrice: 700,
     image: "/products/1.jpg",
@@ -154,6 +154,17 @@ async function request(
   const productId = product.id;
   x = await request("/api/admin/products/" + productId, "PUT", product, true);
   assert.equal(x.data.price, 105);
+  assert.equal(x.data.gender, "mixte");
+  x = await request(
+    "/api/admin/products/" + productId,
+    "PUT",
+    { ...product, type: "full" },
+    true,
+  );
+  assert.equal(x.r.status, 200);
+  assert.equal(x.data.gender, "mixte");
+  assert.equal(x.data.type, "full");
+  await request("/api/admin/products/" + productId, "PUT", product, true);
   x = await request("/api/products");
   assert(
     x.data.some(

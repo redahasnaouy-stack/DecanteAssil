@@ -385,7 +385,9 @@ function App() {
       ...c,
       products: filtered
         .filter(
-          (p) => p.type === c.type && (!c.gender || p.gender === c.gender),
+          (p) =>
+            p.type === c.type &&
+            (!c.gender || p.gender === c.gender || p.gender === "mixte"),
         )
         .sort((a, b) =>
           sort === "asc"
@@ -395,7 +397,8 @@ function App() {
               : 0,
         ),
     }));
-  let visibleCount = groups.reduce((n, g) => n + g.products.length, 0);
+  let visibleCount = new Set(groups.flatMap((g) => g.products.map((p) => p.id)))
+    .size;
   return (
     <>
       <div className="announcement">

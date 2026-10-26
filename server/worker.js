@@ -226,14 +226,6 @@ function productInput(data, id) {
     "Catégorie invalide.",
   );
   check(
-    p.type !== "decant" || p.gender !== "mixte",
-    "Choisissez homme ou femme pour un décant designer.",
-  );
-  check(
-    p.type !== "full" || p.gender !== "mixte",
-    "Choisissez homme ou femme pour un flacon complet.",
-  );
-  check(
     /^\/products\/[\w.-]+$/.test(p.image) ||
       /^\/api\/media\/[a-f0-9-]+$/.test(p.image) ||
       /^https:\/\/[^\s]+$/.test(p.image),
