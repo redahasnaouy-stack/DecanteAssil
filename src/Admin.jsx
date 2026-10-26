@@ -290,7 +290,7 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
                 onChange={(e) => set("type", e.target.value)}
               >
                 <option value="decant">Décant designer</option>
-                <option value="niche">Parfum niche</option>
+                <option value="niche">Parfum nishe</option>
                 <option value="full">Flacon complet</option>
               </select>
             </label>
@@ -1091,7 +1091,7 @@ export default function Admin() {
                             </td>
                             <td>
                               {p.type === "niche"
-                                ? "Parfum niche"
+                                ? "Parfum nishe"
                                 : p.type === "full"
                                   ? "Flacon complet"
                                   : "Décant"}
