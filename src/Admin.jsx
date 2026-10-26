@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -18,7 +18,14 @@ import {
   Menu,
   Check,
   ChevronRight,
+  UserRound,
+  Phone,
+  MapPin,
+  CalendarDays,
+  Truck,
+  Globe,
 } from "lucide-react";
+import JsBarcode from "jsbarcode";
 import "./admin.css";
 const STATUS = {
   pending: "Nouveau",
@@ -95,18 +102,53 @@ function downloadCSV(rows, filename) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 function Ticket({ order, onClose }) {
+  const barcode = useRef(null);
+  const [barcodeReady, setBarcodeReady] = useState(false);
+  const ref = reference(order);
+  const collectible =
+    order.grandTotal !== undefined &&
+    !["delivered", "cancelled"].includes(order.status);
+  useEffect(() => {
+    setBarcodeReady(false);
+    try {
+      JsBarcode(barcode.current, ref, {
+        format: "CODE128",
+        width: 1.6,
+        height: 48,
+        margin: 16,
+        displayValue: false,
+        background: "#fff",
+        lineColor: "#000",
+      });
+      const svg = barcode.current;
+      svg.setAttribute(
+        "viewBox",
+        `0 0 ${parseFloat(svg.getAttribute("width"))} ${parseFloat(svg.getAttribute("height"))}`,
+      );
+      svg.setAttribute("preserveAspectRatio", "none");
+      setBarcodeReady(true);
+    } catch {
+      setBarcodeReady(false);
+    }
+  }, [ref]);
+  const ticketDate = new Date(order.createdAt).toLocaleDateString("fr-MA", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Africa/Casablanca",
+  });
   return (
     <div
       className="ticket-backdrop"
       role="dialog"
       aria-modal="true"
-      aria-label={"Ticket " + reference(order)}
+      aria-label={"Ticket " + ref}
     >
       <div className="ticket-dialog">
         <div className="ticket-toolbar">
-          <span>Ticket de préparation / livraison</span>
+          <span>Étiquette de livraison · A6</span>
           <div>
-            <button onClick={() => window.print()}>
+            <button disabled={!barcodeReady} onClick={() => window.print()}>
               <Printer size={17} /> Imprimer
             </button>
             <button aria-label="Fermer le ticket" onClick={onClose}>
@@ -114,83 +156,118 @@ function Ticket({ order, onClose }) {
             </button>
           </div>
         </div>
-        <article className="print-ticket">
-          <div className="ticket-brand">
-            <img src="/logo.png" alt="DecanteAssil" />
-            <div>
-              <strong>DECANTEASSIL</strong>
-              <span>PARFUMS ORIGINAUX</span>
+        <article
+          className={
+            "print-ticket shipping-label" +
+            (order.items.length > 2 ? " label-many-items" : "")
+          }
+        >
+          <header className="label-header">
+            <div className="label-brand">
+              <img src="/logo.png" alt="" />
+              <div>
+                <strong>DECANTEASSIL</strong>
+                <span>PARFUMS ORIGINAUX</span>
+              </div>
             </div>
-          </div>
-          <div className="ticket-id">
-            <h1>{reference(order)}</h1>
-            <p>{date(order.createdAt)}</p>
-            <span>{STATUS[order.status]}</span>
-          </div>
-          <div className="ticket-customer">
-            <h2>DESTINATAIRE</h2>
-            <strong>{order.customer.name}</strong>
-            <p className="ticket-phone">{order.customer.phone}</p>
-            <p>{order.customer.address}</p>
-            <strong>{order.customer.city}</strong>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Article / format</th>
-                <th>Qté</th>
-                <th>Montant</th>
-              </tr>
-            </thead>
-            <tbody>
-              {order.items.map((p, i) => (
-                <tr key={i}>
-                  <td>
-                    <strong>
-                      {p.brand} — {p.name}
-                    </strong>
-                    <span>{p.size}</span>
-                  </td>
-                  <td>{p.qty}</td>
-                  <td>{money(p.price * p.qty)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="ticket-subtotals">
-            <div>
-              <span>Sous-total produits</span>
-              <strong>{money(order.total)}</strong>
+            <div className="label-reference">
+              <h1>N° COMMANDE</h1>
+              <strong>{ref}</strong>
+              <p>
+                <CalendarDays aria-hidden="true" />
+                {ticketDate}
+              </p>
             </div>
-            <div>
-              <span>Livraison</span>
-              <strong>
-                {order.shippingFee === undefined
-                  ? "Non renseignée"
-                  : money(order.shippingFee)}
-              </strong>
+          </header>
+          <div className="label-columns">
+            <section className="label-client">
+              <h2>CLIENT</h2>
+              <div className="label-info">
+                <UserRound aria-hidden="true" />
+                <strong>{order.customer.name}</strong>
+              </div>
+              <div className="label-info">
+                <Phone aria-hidden="true" />
+                <strong>{order.customer.phone}</strong>
+              </div>
+              <div className="label-info label-address">
+                <MapPin aria-hidden="true" />
+                <div>
+                  <strong>{order.customer.city}</strong>
+                  <p>{order.customer.address}</p>
+                </div>
+              </div>
+            </section>
+            <section className="label-articles">
+              <h2>
+                <Package aria-hidden="true" /> ARTICLES
+              </h2>
+              <div className="label-item-list">
+                {order.items.map((p, i) => (
+                  <div className="label-item" key={i}>
+                    <Package aria-hidden="true" />
+                    <div>
+                      <strong>
+                        {p.brand} — {p.name}
+                      </strong>
+                      <p>{p.size}</p>
+                      <p>Qté : {p.qty}</p>
+                      <b>{money(p.price * p.qty)}</b>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+          <div className="label-bottom">
+            <div className="label-costs">
+              <span>
+                Produits : <b>{money(order.total)}</b>
+              </span>
+              <span>
+                Livraison :{" "}
+                <b>
+                  {order.shippingFee === undefined
+                    ? "Non renseignée"
+                    : money(order.shippingFee)}
+                </b>
+              </span>
             </div>
+            <section className="label-payment">
+              <h2>
+                <Truck aria-hidden="true" />
+                {collectible
+                  ? "À ENCAISSER — CASH"
+                  : order.grandTotal === undefined
+                    ? "TOTAL ENREGISTRÉ"
+                    : order.status === "cancelled"
+                      ? "COMMANDE ANNULÉE"
+                      : "TOTAL COMMANDE"}
+              </h2>
+              <strong>{money(payable(order))}</strong>
+            </section>
+            <div className="label-barcode">
+              <svg
+                ref={barcode}
+                role="img"
+                aria-label={"Code-barres commande " + ref}
+              />
+              <strong>{ref}</strong>
+              {!barcodeReady && <span>Préparation du code-barres…</span>}
+            </div>
+            <footer className="label-footer">
+              <span>
+                <Globe aria-hidden="true" />
+                {window.location.host}
+              </span>
+              <em>Merci pour votre confiance !</em>
+            </footer>
+            {order.shippingFee === undefined && (
+              <p className="label-legacy-note">
+                Ancienne commande : livraison non enregistrée, à confirmer.
+              </p>
+            )}
           </div>
-          <div className="ticket-total">
-            <span>
-              {order.grandTotal === undefined
-                ? "Total enregistré"
-                : "Total avec livraison"}
-            </span>
-            <strong>{money(payable(order))}</strong>
-          </div>
-          <p className="ticket-disclaimer">
-            Ce ticket n’est pas une preuve de paiement.{" "}
-            {order.shippingFee === undefined &&
-              "Ancienne commande : frais de livraison non enregistrés."}
-          </p>
-          <div className="ticket-checks">
-            □ Préparé &nbsp;&nbsp; □ Vérifié &nbsp;&nbsp; □ Expédié
-          </div>
-          <p className="ticket-thanks">
-            Merci pour votre confiance ✧ DecanteAssil
-          </p>
-          <small>Référence complète : {order.id}</small>
         </article>
       </div>
     </div>

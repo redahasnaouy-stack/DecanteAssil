@@ -12,6 +12,7 @@
     "test": "npm run build && node --test tests/no-database.test.mjs && node tests/run-local.mjs"
   },
   "dependencies": {
+    "jsbarcode": "^3.12.3",
     "lucide-react": "^0.468.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
