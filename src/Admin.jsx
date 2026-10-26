@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import JsBarcode from "jsbarcode";
 import "./admin.css";
+const GENDER_LABELS = { homme: "Homme", femme: "Femme", mixte: "Unisex" };
 const STATUS = {
   pending: "Nouveau",
   confirmed: "Confirmé",
@@ -403,7 +404,7 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
               >
                 <option value="homme">Homme</option>
                 <option value="femme">Femme</option>
-                <option value="mixte">Mixte</option>
+                <option value="mixte">Unisex</option>
               </select>
             </label>
             <label>
@@ -1219,7 +1220,9 @@ export default function Admin() {
                                   : p.type === "full"
                                     ? "Flacon complet"
                                     : "Décant"}
-                              <small>{p.gender}</small>
+                              <small>
+                                {GENDER_LABELS[p.gender] || p.gender}
+                              </small>
                             </td>
                             <td>
                               {money(p.price)}
