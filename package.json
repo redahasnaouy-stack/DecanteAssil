@@ -1,1 +1,23 @@
-{"name":"decanteassil","version":"1.0.0","private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0"},"dependencies":{"lucide-react":"^0.468.0","react":"^19.0.0","react-dom":"^19.0.0"},"devDependencies":{"vite":"^6.1.0"}}
+{
+  "name": "decanteassil",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "dev:worker": "npm run build && wrangler dev --local --port 8787",
+    "check:worker": "wrangler deploy --dry-run",
+    "test": "npm run build && node --test tests/no-database.test.mjs && node tests/run-local.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0",
+    "wrangler": "4.153.0"
+  }
+}

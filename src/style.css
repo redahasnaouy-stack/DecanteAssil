@@ -1704,3 +1704,67 @@ footer > small {
     mask-image: linear-gradient(180deg, transparent, #000 12%);
   }
 }
+.instagram-section {
+  text-align: center;
+  background: #fff7e9;
+  border-top: 1px solid #ead8b7;
+  padding: 55px 6%;
+}
+.instagram-section > svg {
+  color: #b88738;
+  margin-bottom: 19px;
+}
+.instagram-section > .eyebrow {
+  display: block;
+}
+.instagram-section h2 {
+  font-size: 37px;
+  margin-top: 14px;
+}
+.instagram-section h2 em {
+  color: #b58434;
+}
+.instagram-section p {
+  font-size: 12px;
+  line-height: 1.8;
+  color: #95805d;
+  margin: 17px 0 24px;
+}
+.instagram-section > .gold-button {
+  font-size: 12px;
+  padding: 13px 22px;
+}
+.order-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.whatsapp-reopen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+  font-size: 12px;
+  text-decoration: underline;
+  color: #927034;
+}
+.footer-links {
+  flex-wrap: wrap;
+}
+@media (max-width: 740px) {
+  .instagram-section {
+    padding: 40px 7%;
+  }
+  .instagram-section h2 {
+    font-size: 28px;
+  }
+  .instagram-section p {
+    font-size: 11px;
+  }
+  .footer-links {
+    gap: 16px;
+  }
+}

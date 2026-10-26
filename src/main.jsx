@@ -13,9 +13,11 @@ import {
   ShieldCheck,
   Truck,
   FlaskConical,
+  Instagram,
 } from "lucide-react";
 import "./style.css";
-const PHONE = "393509071813";
+const Admin = React.lazy(() => import("./Admin.jsx"));
+const DEFAULT_PHONE = "393509071813";
 const categories = [
   { name: "Parfum Nish", title: "Décants parfums niche", type: "niche" },
   {
@@ -154,7 +156,9 @@ function ProductCard({ p, onAdd, onOpen }) {
             {p.type === "full" ? "" : size.replace(" ", "").toUpperCase()}
           </button>
         </h3>
-        <p className="description">{descriptions[p.id] || p.notes}</p>
+        <p className="description">
+          {p.description || descriptions[p.id] || p.notes}
+        </p>
         <div className="card-options">
           <span>{p.notes}</span>
           {p.type !== "full" ? (
@@ -172,8 +176,12 @@ function ProductCard({ p, onAdd, onOpen }) {
         </div>
         <div className="card-actions">
           <strong className="price-pill">{money(getPrice(p, size))}</strong>
-          <button className="gold-button" onClick={() => onAdd(p, size)}>
-            Ajouter au panier
+          <button
+            className="gold-button"
+            disabled={p.inStock === false}
+            onClick={() => onAdd(p, size)}
+          >
+            {p.inStock === false ? "Épuisé" : "Ajouter au panier"}
           </button>
         </div>
       </div>
@@ -181,6 +189,16 @@ function ProductCard({ p, onAdd, onOpen }) {
   );
 }
 function App() {
+  const [store, setStore] = useState({
+    instagram: "https://www.instagram.com/elabbari10/",
+    whatsapp: DEFAULT_PHONE,
+  });
+  const [ordersEnabled, setOrdersEnabled] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [website, setWebsite] = useState("");
+  const [orderLink, setOrderLink] = useState("");
+  const orderRequest = useRef(null);
+  const PHONE = store.whatsapp || DEFAULT_PHONE;
   const [products, setProducts] = useState([]),
     [catalogError, setCatalogError] = useState(false),
     [category, setCategory] = useState("Tous les parfums"),
@@ -202,13 +220,27 @@ function App() {
       cityOption: "other",
     });
   useEffect(() => {
-    fetch("/catalog.json")
-      .then((r) => {
-        if (!r.ok) throw Error();
-        return r.json();
-      })
+    async function loadJSON(api, fallback) {
+      let response = await fetch(api);
+      if (
+        response.status === 404 ||
+        !(response.headers.get("content-type") || "").includes(
+          "application/json",
+        )
+      )
+        response = await fetch(fallback);
+      if (!response.ok) throw Error();
+      return response.json();
+    }
+    loadJSON("/api/products", "/catalog.json")
       .then(setProducts)
       .catch(() => setCatalogError(true));
+    loadJSON("/api/store", "/store.json")
+      .then((data) => {
+        setStore(data.settings || data);
+        setOrdersEnabled(!!data.ordersEnabled);
+      })
+      .catch(() => {});
   }, []);
   useEffect(() => {
     try {
@@ -252,32 +284,88 @@ function App() {
     setDetailSize(p.type === "full" ? "Flacon complet" : "10 ml");
     setSelected(p);
   }
-  function order(e) {
+  async function order(e) {
     e.preventDefault();
+    if (submitting) return;
     setError("");
+    setOrderLink("");
     if (!cart.length) {
       setError("Ajoutez au moins un parfum à votre panier.");
+      return;
+    }
+    if (!form.name.trim() || !form.address.trim()) {
+      setError("Merci de compléter votre nom et votre adresse.");
       return;
     }
     if (!/^[+\d\s().-]{8,20}$/.test(form.phone.trim())) {
       setError("Veuillez saisir un numéro de téléphone valide.");
       return;
     }
-    let city =
+    const city =
       form.cityOption === "casablanca" ? "Casablanca" : form.city.trim();
     if (!city) {
       setError("Veuillez préciser votre ville.");
       return;
     }
-    let message = `Bonjour DecanteAssil ✨\nJe souhaite commander :\n\n${cart.map((p) => `• ${p.brand} — ${p.name}\n  ${p.size} × ${p.qty} : ${money(p.price * p.qty)}`).join("\n")}\n\nSous-total indicatif : ${money(total)}\nLivraison, prix et disponibilité à confirmer.\n\nNom : ${form.name.trim()}\nTéléphone : ${form.phone.trim()}\nVille : ${city}\nAdresse : ${form.address.trim()}\n\nMerci de confirmer ma commande et le montant final.`;
-    window.open(
-      `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
-    setToast(
-      "Votre message est prêt. Envoyez-le dans WhatsApp pour transmettre votre demande.",
-    );
+    let items = cart,
+      finalTotal = total,
+      reference = "";
+    setSubmitting(true);
+    try {
+      if (ordersEnabled) {
+        const payload = {
+          name: form.name.trim(),
+          phone: form.phone.trim(),
+          city,
+          address: form.address.trim(),
+          items: cart.map((p) => ({ id: p.id, size: p.size, qty: p.qty })),
+          website,
+        };
+        const fingerprint = JSON.stringify(payload);
+        if (orderRequest.current?.fingerprint !== fingerprint)
+          orderRequest.current = { fingerprint, key: crypto.randomUUID() };
+        const response = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...payload,
+            requestKey: orderRequest.current.key,
+          }),
+        });
+        const result = await response.json();
+        if (!response.ok)
+          throw Error(
+            result.error ||
+              "Impossible d’enregistrer la commande. Réessayez ou contactez-nous sur WhatsApp.",
+          );
+        items = result.items;
+        finalTotal = result.total;
+        reference = "DA-" + result.id.slice(0, 8).toUpperCase();
+        setCart((old) =>
+          old.map((p) => {
+            const item = items.find(
+              (i) => String(i.id) === String(p.id) && i.size === p.size,
+            );
+            return item ? { ...p, price: item.price } : p;
+          }),
+        );
+      }
+      const message = `Bonjour DecanteAssil ✨${reference ? "\nCommande : " + reference : ""}\nJe souhaite commander :\n\n${items.map((p) => `• ${p.brand} — ${p.name}\n  ${p.size} × ${p.qty} : ${money(p.price * p.qty)}`).join("\n")}\n\nSous-total indicatif : ${money(finalTotal)}\nLivraison, prix et disponibilité à confirmer.\n\nNom : ${form.name.trim()}\nTéléphone : ${form.phone.trim()}\nVille : ${city}\nAdresse : ${form.address.trim()}\n\nMerci de confirmer ma commande et le montant final.`;
+      const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
+      setOrderLink(url);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setToast(
+        reference
+          ? `Demande ${reference} enregistrée. Envoyez le message WhatsApp pour la confirmer avec nous.`
+          : "Votre message est prêt. Envoyez-le dans WhatsApp pour transmettre votre demande.",
+      );
+    } catch (err) {
+      setError(
+        err.message || "Service indisponible. Réessayez dans un instant.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
   let filtered = products.filter((p) =>
     `${p.name} ${p.brand} ${p.notes}`
@@ -513,6 +601,26 @@ function App() {
           </a>
         </section>
       </main>
+      {store.instagram && (
+        <section className="instagram-section">
+          <Instagram size={31} />
+          <span className="eyebrow">LE PARFUM SE PARTAGE</span>
+          <h2>
+            Retrouvez-nous sur <em>Instagram.</em>
+          </h2>
+          <p>Nos découvertes, nos nouveautés et l’univers DecanteAssil.</p>
+          <a
+            className="gold-button"
+            href={store.instagram}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Instagram size={17} /> @
+            {new URL(store.instagram).pathname.split("/").filter(Boolean)[0]}{" "}
+            <ArrowRight size={16} />
+          </a>
+        </section>
+      )}
       <footer>
         <a className="footer-logo" href="#accueil">
           <img src="/logo.png" alt="DecanteAssil" />
@@ -521,6 +629,12 @@ function App() {
         <div className="footer-links">
           <button onClick={() => collection()}>La collection</button>
           <a href="#maison">Notre maison</a>
+          {store.instagram && (
+            <a href={store.instagram} target="_blank" rel="noreferrer">
+              Instagram
+            </a>
+          )}
+          <a href="/admin">Administration</a>
           <a href={`https://wa.me/${PHONE}`} target="_blank" rel="noreferrer">
             Contact WhatsApp
           </a>
@@ -643,7 +757,11 @@ function App() {
           <div className="detail-body">
             <span className="eyebrow">{selected.brand}</span>
             <h2>{selected.name}</h2>
-            <p>{descriptions[selected.id]}</p>
+            <p>
+              {selected.description ||
+                descriptions[selected.id] ||
+                selected.notes}
+            </p>
             <span className="detail-notes">{selected.notes}</span>
             <label htmlFor="detail-size">Choisir le format</label>
             <select
@@ -653,7 +771,11 @@ function App() {
             >
               {(selected.type === "full"
                 ? ["Flacon complet"]
-                : ["5 ml", "10 ml", "Flacon complet"]
+                : [
+                    "5 ml",
+                    "10 ml",
+                    ...(selected.fullPrice ? ["Flacon complet"] : []),
+                  ]
               ).map((s) => (
                 <option key={s}>{s}</option>
               ))}
@@ -669,6 +791,7 @@ function App() {
             </small>
             <button
               className="gold-button"
+              disabled={selected.inStock === false}
               onClick={() => {
                 add(selected, detailSize);
                 setSelected(null);
@@ -847,14 +970,37 @@ function App() {
               <button
                 type="submit"
                 className="gold-button order-button"
-                disabled={!cart.length}
+                disabled={!cart.length || submitting}
               >
-                Commander sur WhatsApp <MessageCircle size={18} />
+                {submitting ? "Enregistrement…" : "Commander sur WhatsApp"}{" "}
+                <MessageCircle size={18} />
               </button>
+              <label className="order-honeypot" aria-hidden="true">
+                Site web
+                <input
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </label>
+              {orderLink && (
+                <a
+                  className="whatsapp-reopen"
+                  href={orderLink}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ouvrir le message WhatsApp <ArrowRight size={15} />
+                </a>
+              )}
               <p className="privacy">
-                <ShieldCheck size={14} /> Vos coordonnées servent à préparer
-                votre message. Envoyez-le dans WhatsApp pour transmettre la
-                demande. Aucun paiement n’est prélevé sur ce site.
+                <ShieldCheck size={14} />{" "}
+                {ordersEnabled
+                  ? "Vos coordonnées sont enregistrées pour le traitement et la livraison de votre demande. "
+                  : "Vos coordonnées servent à préparer votre message. "}{" "}
+                Envoyez le message WhatsApp pour échanger avec notre équipe.
+                Aucun paiement n’est prélevé sur ce site.
               </p>
             </form>
           </div>
@@ -863,4 +1009,12 @@ function App() {
     </>
   );
 }
-createRoot(document.getElementById("root")).render(<App />);
+createRoot(document.getElementById("root")).render(
+  location.pathname === "/admin" || location.pathname.startsWith("/admin/") ? (
+    <React.Suspense fallback={<p>Chargement…</p>}>
+      <Admin />
+    </React.Suspense>
+  ) : (
+    <App />
+  ),
+);
