@@ -141,5 +141,57 @@
     "fullPrice": 1200,
     "tag": "Parfum complet",
     "notes": "Lavande · Fleur d’oranger · Vanille"
+  },
+  {
+    "id": "oud-91180",
+    "name": "OUD Ref 91180 — 10 Grams",
+    "brand": "Sélection Oud",
+    "type": "oud",
+    "gender": "mixte",
+    "format": "10 g",
+    "image": "/products/oud-91180.png",
+    "price": 400,
+    "tag": "Bois d’oud",
+    "notes": "Bois d’oud · 10 grammes",
+    "description": "Découvrez notre sélection de bois d’oud, référence 91180, proposée en format de 10 grammes."
+  },
+  {
+    "id": "oud-bialoud",
+    "name": "Oud BiAloud",
+    "brand": "Sélection Oud",
+    "type": "oud",
+    "gender": "mixte",
+    "format": "Pot — contenance à confirmer",
+    "image": "/products/oud-bialoud.png",
+    "price": 1850,
+    "tag": "Oud",
+    "notes": "Collection Oud · Pot",
+    "description": "Oud BiAloud en pot. La contenance exacte est à confirmer avec notre équipe avant validation de votre commande."
+  },
+  {
+    "id": "oud-91160",
+    "name": "OUD Ref 91160 — 10 Grams",
+    "brand": "Sélection Oud",
+    "type": "oud",
+    "gender": "mixte",
+    "format": "10 g",
+    "image": "/products/oud-91160.png",
+    "price": 300,
+    "tag": "Bois d’oud",
+    "notes": "Bois d’oud · 10 grammes",
+    "description": "Découvrez notre sélection de bois d’oud, référence 91160, proposée en format de 10 grammes."
+  },
+  {
+    "id": "oud-eashiq",
+    "name": "Eashiq Al Oud",
+    "brand": "Sélection Oud",
+    "type": "oud",
+    "gender": "mixte",
+    "format": "Pot — contenance à confirmer",
+    "image": "/products/oud-eashiq.png",
+    "price": 720,
+    "tag": "Oud",
+    "notes": "Collection Oud · Pot",
+    "description": "Eashiq Al Oud en pot. La contenance exacte est à confirmer avec notre équipe avant validation de votre commande."
   }
 ]

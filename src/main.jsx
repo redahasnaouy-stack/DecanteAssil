@@ -20,6 +20,7 @@ import "./style.css";
 const Admin = React.lazy(() => import("./Admin.jsx"));
 const DEFAULT_PHONE = "393509071813";
 const categories = [
+  { name: "Oud", title: "L’univers du Oud", type: "oud" },
   { name: "Parfum Nishe", title: "Décants parfums nishe", type: "niche" },
   {
     name: "Decante homme",
@@ -79,7 +80,18 @@ function readCart() {
     return [];
   }
 }
+function defaultFormat(p) {
+  return p.type === "oud"
+    ? p.format || "À l’unité"
+    : p.type === "full"
+      ? "Flacon complet"
+      : "10 ml";
+}
+function singleFormat(p) {
+  return p.type === "full" || p.type === "oud";
+}
 function getPrice(p, size) {
+  if (p.type === "oud") return p.price;
   return size === "Flacon complet"
     ? p.fullPrice || p.price
     : size === "5 ml"
@@ -137,9 +149,7 @@ function Modal({ className = "", label, onClose, children }) {
   );
 }
 function ProductCard({ p, onAdd, onOpen }) {
-  const [size, setSize] = useState(
-    p.type === "full" ? "Flacon complet" : "10 ml",
-  );
+  const [size, setSize] = useState(defaultFormat(p));
   return (
     <article className="product-card">
       <button
@@ -154,7 +164,7 @@ function ProductCard({ p, onAdd, onOpen }) {
         <h3>
           <button onClick={() => onOpen(p)}>
             {p.brand} — {p.name}{" "}
-            {p.type === "full" ? "" : size.replace(" ", "").toUpperCase()}
+            {singleFormat(p) ? "" : size.replace(" ", "").toUpperCase()}
           </button>
         </h3>
         <p className="description">
@@ -162,7 +172,7 @@ function ProductCard({ p, onAdd, onOpen }) {
         </p>
         <div className="card-options">
           <span>{p.notes}</span>
-          {p.type !== "full" ? (
+          {!singleFormat(p) ? (
             <select
               aria-label={"Format de " + p.name}
               value={size}
@@ -172,7 +182,7 @@ function ProductCard({ p, onAdd, onOpen }) {
               <option>10 ml</option>
             </select>
           ) : (
-            <span className="full-format">Flacon complet</span>
+            <span className="full-format">{defaultFormat(p)}</span>
           )}
         </div>
         <div className="card-actions">
@@ -286,7 +296,7 @@ function App() {
     );
   }
   function openProduct(p) {
-    setDetailSize(p.type === "full" ? "Flacon complet" : "10 ml");
+    setDetailSize(defaultFormat(p));
     setSelected(p);
   }
   async function order(e) {
@@ -780,8 +790,8 @@ function App() {
               value={detailSize}
               onChange={(e) => setDetailSize(e.target.value)}
             >
-              {(selected.type === "full"
-                ? ["Flacon complet"]
+              {(singleFormat(selected)
+                ? [defaultFormat(selected)]
                 : [
                     "5 ml",
                     "10 ml",
@@ -796,9 +806,13 @@ function App() {
             </strong>
             <small>
               Prix indicatif.{" "}
-              {detailSize === "Flacon complet"
-                ? "Contenance et disponibilité à confirmer."
-                : "Décant indépendant du flacon original."}
+              {selected.type === "oud"
+                ? "Format : " +
+                  defaultFormat(selected) +
+                  ". Disponibilité à confirmer."
+                : detailSize === "Flacon complet"
+                  ? "Contenance et disponibilité à confirmer."
+                  : "Décant indépendant du flacon original."}
             </small>
             <button
               className="gold-button"

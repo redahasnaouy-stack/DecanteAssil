@@ -71,7 +71,14 @@ async function request(
     "Authentication, HttpOnly cookie, unauthorized access and CSRF: passed",
   );
   x = await request("/api/products");
-  assert.equal(x.data.length, 12);
+  assert.equal(x.data.length, 16);
+  const seededOud = x.data.filter((p) => p.type === "oud");
+  assert.equal(seededOud.length, 4);
+  assert.equal(seededOud.find((p) => p.id === "oud-91180").price, 400);
+  assert.equal(seededOud.find((p) => p.id === "oud-bialoud").price, 1850);
+  assert.equal(seededOud.find((p) => p.id === "oud-91160").price, 300);
+  assert.equal(seededOud.find((p) => p.id === "oud-eashiq").price, 720);
+  assert.equal(x.data.find((p) => p.id === "2").tag, "Existing merchant edit");
   x = await request("/api/store");
   assert(x.data.ordersEnabled);
   assert.equal(
@@ -164,6 +171,25 @@ async function request(
   assert.equal(x.r.status, 200);
   assert.equal(x.data.gender, "mixte");
   assert.equal(x.data.type, "full");
+  x = await request(
+    "/api/admin/products/" + productId,
+    "PUT",
+    { ...product, type: "oud", format: "12 g" },
+    true,
+  );
+  assert.equal(x.r.status, 200);
+  assert.equal(x.data.type, "oud");
+  assert.equal(x.data.format, "12 g");
+  const oudOrder = await request("/api/orders", "POST", {
+    ...payload,
+    requestKey: crypto.randomUUID(),
+    items: [{ id: productId, size: "12 g", qty: 2 }],
+  });
+  assert.equal(oudOrder.r.status, 201, JSON.stringify(oudOrder.data));
+  assert.equal(oudOrder.data.total, 210);
+  assert.equal(oudOrder.data.grandTotal, 230);
+  assert.equal(oudOrder.data.items[0].size, "12 g");
+
   await request("/api/admin/products/" + productId, "PUT", product, true);
   x = await request("/api/products");
   assert(

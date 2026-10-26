@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
 import { spawn } from "node:child_process";
@@ -38,6 +38,52 @@ await writeFile(
 let server,
   output = "";
 try {
+  // Simulate the existing 12-product deployment, including a merchant edit.
+  const original = JSON.parse(
+    await readFile(join(root, "public/catalog.json"), "utf8"),
+  ).filter((p) => p.type !== "oud");
+  const quote = (value) => "'" + String(value).replaceAll("'", "''") + "'";
+  const legacySQL =
+    "CREATE TABLE settings (key TEXT PRIMARY KEY,value TEXT NOT NULL); CREATE TABLE products (id TEXT PRIMARY KEY,data TEXT NOT NULL); INSERT INTO settings(key,value) VALUES ('initialized','1');\n" +
+    original
+      .map((p) => {
+        const record = { ...p, id: String(p.id), active: true, inStock: true };
+        if (record.id === "2") record.tag = "Existing merchant edit";
+        return `INSERT INTO products(id,data) VALUES (${quote(record.id)},${quote(JSON.stringify(record))});`;
+      })
+      .join("\n");
+  await writeFile(join(work, "legacy.sql"), legacySQL);
+  const prep = spawn(
+    process.execPath,
+    [
+      join(root, "node_modules/wrangler/bin/wrangler.js"),
+      "d1",
+      "execute",
+      "DB",
+      "--local",
+      "--file",
+      join(work, "legacy.sql"),
+      "--persist-to",
+      join(work, "state"),
+    ],
+    {
+      cwd: work,
+      env: {
+        ...process.env,
+        XDG_CONFIG_HOME: join(work, "config"),
+        WRANGLER_LOG_PATH: join(work, "seed.log"),
+        WRANGLER_SEND_METRICS: "false",
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
+  );
+  prep.stdout.on("data", (b) => (output += b.toString()));
+  prep.stderr.on("data", (b) => (output += b.toString()));
+  const prepared = await new Promise((res, rej) => {
+    prep.on("error", rej);
+    prep.on("exit", res);
+  });
+  if (prepared !== 0) throw Error("Could not prepare legacy database fixture.");
   server = spawn(
     process.execPath,
     [

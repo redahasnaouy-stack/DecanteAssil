@@ -162,6 +162,36 @@ async function initialize(env, request) {
           ),
         ]);
       }
+      const oudSeed = await env.DB.prepare(
+        "SELECT value FROM settings WHERE key='seed_oud_products_v1'",
+      ).first();
+      if (!oudSeed) {
+        const response = await env.ASSETS.fetch(
+          new URL("/catalog.json", request.url),
+        );
+        check(response.ok, "Catalogue Oud indisponible.", 503);
+        const additions = (await response.json()).filter(
+          (p) => p.type === "oud" && String(p.id).startsWith("oud-"),
+        );
+        await env.DB.batch([
+          ...additions.map((p) =>
+            env.DB.prepare(
+              "INSERT OR IGNORE INTO products(id,data) VALUES (?,?)",
+            ).bind(
+              String(p.id),
+              JSON.stringify({
+                ...p,
+                id: String(p.id),
+                active: true,
+                inStock: true,
+              }),
+            ),
+          ),
+          env.DB.prepare(
+            "INSERT OR IGNORE INTO settings(key,value) VALUES ('seed_oud_products_v1','1')",
+          ),
+        ]);
+      }
     })();
     ready.set(env.DB, task);
     task.catch(() => ready.delete(env.DB));
@@ -221,7 +251,7 @@ function productInput(data, id) {
     inStock: data.inStock !== false,
   };
   check(
-    ["decant", "full", "niche"].includes(p.type) &&
+    ["decant", "full", "niche", "oud"].includes(p.type) &&
       ["homme", "femme", "mixte"].includes(p.gender),
     "Catégorie invalide.",
   );
@@ -231,7 +261,10 @@ function productInput(data, id) {
       /^https:\/\/[^\s]+$/.test(p.image),
     "Utilisez une image HTTPS ou un fichier du catalogue.",
   );
+  if (p.type === "oud")
+    p.format = text(data.format || "À l’unité", "Format", 60);
   if (
+    p.type !== "oud" &&
     data.fullPrice !== undefined &&
     data.fullPrice !== null &&
     data.fullPrice !== ""
@@ -240,6 +273,10 @@ function productInput(data, id) {
   return p;
 }
 function selectedPrice(p, size) {
+  if (p.type === "oud") {
+    check(size === (p.format || "À l’unité"), "Format Oud indisponible.");
+    return p.price;
+  }
   if (p.type === "full") {
     check(size === "Flacon complet", "Format indisponible.");
     return p.price;

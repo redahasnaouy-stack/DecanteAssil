@@ -42,6 +42,7 @@ const emptyProduct = {
   name: "",
   brand: "",
   type: "decant",
+  format: "À l’unité",
   gender: "homme",
   price: 100,
   fullPrice: "",
@@ -313,6 +314,7 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
                 <option value="decant">Décant designer</option>
                 <option value="niche">Parfum nishe</option>
                 <option value="full">Flacon complet</option>
+                <option value="oud">Oud</option>
               </select>
             </label>
             <label>
@@ -328,9 +330,11 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
               </select>
             </label>
             <label>
-              {form.type === "full"
-                ? "Prix flacon (DH)"
-                : "Prix décant 10 ml (DH)"}
+              {form.type === "oud"
+                ? "Prix du format (DH)"
+                : form.type === "full"
+                  ? "Prix flacon (DH)"
+                  : "Prix décant 10 ml (DH)"}
               <input
                 type="number"
                 required
@@ -341,7 +345,7 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
                 onChange={(e) => set("price", e.target.value)}
               />
             </label>
-            {form.type !== "full" && (
+            {!["full", "oud"].includes(form.type) && (
               <label>
                 Prix flacon complet (facultatif)
                 <input
@@ -355,6 +359,18 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
               </label>
             )}
           </div>
+          {form.type === "oud" && (
+            <label>
+              Format / poids / contenance
+              <input
+                required
+                maxLength={60}
+                placeholder="Ex. 12 g, 3 ml, coffret…"
+                value={form.format || ""}
+                onChange={(e) => set("format", e.target.value)}
+              />
+            </label>
+          )}
           <label>
             Notes olfactives
             <input
@@ -399,8 +415,10 @@ function ProductEditor({ product, onClose, onSaved, onError }) {
             </label>
           </div>
           <p className="admin-hint">
-            Le prix du décant 5 ml est calculé à 58 % du prix 10 ml, arrondi au
-            dirham. Les commandes existantes gardent leurs prix d’origine.
+            {form.type === "oud"
+              ? "Le prix correspond au format ou au poids indiqué pour ce produit Oud."
+              : "Le prix du décant 5 ml est calculé à 58 % du prix 10 ml, arrondi au dirham."}{" "}
+            Les commandes existantes gardent leurs prix d’origine.
           </p>
           {error && (
             <div className="admin-error" role="alert">
@@ -1117,17 +1135,23 @@ export default function Admin() {
                               </div>
                             </td>
                             <td>
-                              {p.type === "niche"
-                                ? "Parfum nishe"
-                                : p.type === "full"
-                                  ? "Flacon complet"
-                                  : "Décant"}
+                              {p.type === "oud"
+                                ? "Oud"
+                                : p.type === "niche"
+                                  ? "Parfum nishe"
+                                  : p.type === "full"
+                                    ? "Flacon complet"
+                                    : "Décant"}
                               <small>{p.gender}</small>
                             </td>
                             <td>
                               {money(p.price)}
                               <small>
-                                {p.type === "full" ? "Flacon" : "10 ml"}
+                                {p.type === "oud"
+                                  ? p.format || "À l’unité"
+                                  : p.type === "full"
+                                    ? "Flacon"
+                                    : "10 ml"}
                               </small>
                             </td>
                             <td>

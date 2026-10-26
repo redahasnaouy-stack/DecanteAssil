@@ -1790,3 +1790,7 @@ footer > small {
   flex-wrap: wrap;
   font-size: 11px;
 }
+.full-format {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

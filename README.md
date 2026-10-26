@@ -47,8 +47,9 @@ Avec D1 activé, gérer les produits depuis `/admin` → Produits. `public/catal
 - `price` : prix en DH du décant 10 ml, ou du flacon pour `type: "full"`.
 - `fullPrice` : prix indicatif du flacon complet.
 - Le décant 5 ml utilise actuellement `Math.round(price * 0.58)`, calcul modifiable dans `src/main.jsx`.
-- `type` : `decant`, `full` ou `niche`.
+- `type` : `decant`, `full`, `niche` ou `oud`.
 - `gender` : `homme`, `femme` ou `mixte`.
+- `format` : format, poids ou contenance pour les produits `oud` (ex. `10 g`).
 - `image` : chemin dans `public`, par exemple `/products/1.jpg`.
 
 Les prix actuels sont des estimations de lancement, pas des relevés vérifiés du marché. Confirmer ou remplacer prix, contenances et disponibilité avant lancement commercial. Les images fournies incluent parfois un flacon original et un décant ; la variante sélectionnée fait foi. Les fiches flacons reprennent ces visuels.

@@ -78,3 +78,7 @@ npm test
 Pour développer le parcours complet : préparer localement un `.dev.vars` ignoré par Git avec des secrets de développement propres, puis lancer `npm run dev:worker`. L’application et l’API sont servies ensemble sur le port 8787. Les données locales restent dans `.wrangler/state`. `npm run dev` sert uniquement le frontend Vite ; son fallback statique conserve le parcours WhatsApp sans suivi D1.
 
 Les tests navigateur effectués pendant l’implémentation couvrent aussi le parcours boutique → D1 → message WhatsApp, les formulaires de gestion, les statuts, la prévisualisation du ticket, l’impression PDF et l’affichage mobile.
+
+## Catégorie Oud
+
+Dans Produits, choisir le type **Oud** et renseigner le champ **Format / poids / contenance** (par exemple 12 g ou 3 ml). Le prix est celui de ce format, sans calcul automatique de décant. Le produit apparaît dans la catégorie Oud, quel que soit son genre (Homme, Femme ou Mixte). Le format est conservé dans le panier, WhatsApp et les tickets. Les quatre produits de la référence fournie (91180, Oud BiAloud, 91160 et Eashiq Al Oud) sont ajoutés une seule fois au catalogue existant après ce déploiement. Les produits existants, leurs modifications et les suppressions ultérieures sont conservés. Les visuels ont été préparés à partir de la référence fournie ; les contenances des deux pots restent à confirmer.
