@@ -35,6 +35,14 @@ Dans Workers & Pages → decanteassil → Settings → Variables and Secrets, aj
 
 Sans ces paramètres, la page de connexion indique que la configuration manque. Les API privées refusent l’accès. La boutique peut continuer à enregistrer les demandes dès que D1 est lié, indépendamment de la configuration du mot de passe.
 
+### Conservation après redéploiement
+
+`wrangler.jsonc` active `keep_vars: true` pour conserver les variables de runtime ajoutées dans le dashboard lors des déploiements GitHub. Wrangler conserve aussi les bindings de type Secret entre versions.
+
+Les deux identifiants doivent rester de type **Secret** dans les paramètres du **Worker de production** (Settings → Variables and Secrets), pas uniquement dans les variables du build ou dans un environnement de prévisualisation. Les variables du build ne sont pas automatiquement des bindings disponibles dans le Worker.
+
+Si des valeurs ont déjà disparu, les recréer une fois en tant que Secrets après déploiement de cette configuration. Ne pas changer `SESSION_SECRET` à chaque déploiement : un changement de cette clé ou du mot de passe invalide les sessions administrateur. Une session expire normalement après 8 heures ; se reconnecter ne demande pas de ressaisir les secrets dans Cloudflare.
+
 ## 3. Vérification sur le site publié
 
 1. Ouvrir `/admin` et se connecter avec le mot de passe choisi.

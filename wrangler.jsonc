@@ -3,6 +3,7 @@
   "name": "decanteassil",
   "compatibility_date": "2026-10-23",
   "workers_dev": true,
+  "keep_vars": true,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
