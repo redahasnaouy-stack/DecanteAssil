@@ -83,15 +83,27 @@ async function request(
     name: "Test Ticket Client",
     phone: "0611111111",
     city: "Casablanca",
+    shippingFee: 0,
+    grandTotal: 1,
     address: "12 rue de validation",
     items: [{ id: "1", size: "10 ml", qty: 2, price: 1 }],
   };
   x = await request("/api/orders", "POST", payload);
   assert.equal(x.r.status, 201, JSON.stringify(x.data));
   assert.equal(x.data.total, 190);
+  assert.equal(x.data.shippingFee, 20);
+  assert.equal(x.data.grandTotal, 210);
   const id = x.data.id;
   let retry = await request("/api/orders", "POST", payload);
   assert.equal(retry.data.id, id);
+  const otherCity = await request("/api/orders", "POST", {
+    ...payload,
+    requestKey: crypto.randomUUID(),
+    city: "Rabat",
+  });
+  assert.equal(otherCity.r.status, 201);
+  assert.equal(otherCity.data.shippingFee, 35);
+  assert.equal(otherCity.data.grandTotal, 225);
   x = await request("/api/orders", "POST", {
     ...payload,
     name: "Different Client",

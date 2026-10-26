@@ -1,3 +1,4 @@
+import { deliveryFee } from "../shared/delivery.js";
 const COOKIE = "da_admin";
 const SESSION_MS = 8 * 60 * 60 * 1000;
 const STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -322,6 +323,8 @@ async function createOrder(request, env) {
     total:
       Math.round(items.reduce((n, p) => n + p.price * p.qty, 0) * 100) / 100,
   };
+  data.shippingFee = deliveryFee(customer.city);
+  data.grandTotal = Math.round((data.total + data.shippingFee) * 100) / 100;
   const id = crypto.randomUUID();
   try {
     await env.DB.prepare(

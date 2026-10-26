@@ -1768,3 +1768,25 @@ footer > small {
     gap: 16px;
   }
 }
+.delivery-summary {
+  border-block: 1px solid #e7cfaa;
+  padding: 15px 0;
+  margin: 19px 0 9px;
+}
+.delivery-summary > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  font-size: 12px;
+  color: #89704a;
+}
+.delivery-summary .grand-total {
+  margin-top: 15px;
+  font-size: 17px;
+  color: #2e2415;
+}
+.city-options label {
+  flex-wrap: wrap;
+  font-size: 11px;
+}

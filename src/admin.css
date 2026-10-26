@@ -1250,3 +1250,19 @@
     margin-top: 10px;
   }
 }
+.ticket-subtotals {
+  padding-top: 13px;
+  font-size: 11px;
+}
+.ticket-subtotals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  margin: 7px 0;
+}
+@media print {
+  .ticket-subtotals {
+    font-size: 9px;
+    padding-top: 9px;
+  }
+}

@@ -36,6 +36,7 @@ const date = (v) =>
     timeStyle: "short",
     timeZone: "Africa/Casablanca",
   });
+const payable = (order) => order.grandTotal ?? order.total;
 const reference = (o) => "DA-" + o.id.slice(0, 8).toUpperCase();
 const emptyProduct = {
   name: "",
@@ -155,13 +156,32 @@ function Ticket({ order, onClose }) {
               ))}
             </tbody>
           </table>
+          <div className="ticket-subtotals">
+            <div>
+              <span>Sous-total produits</span>
+              <strong>{money(order.total)}</strong>
+            </div>
+            <div>
+              <span>Livraison</span>
+              <strong>
+                {order.shippingFee === undefined
+                  ? "Non renseignée"
+                  : money(order.shippingFee)}
+              </strong>
+            </div>
+          </div>
           <div className="ticket-total">
-            <span>Total produits</span>
-            <strong>{money(order.total)}</strong>
+            <span>
+              {order.grandTotal === undefined
+                ? "Total enregistré"
+                : "Total avec livraison"}
+            </span>
+            <strong>{money(payable(order))}</strong>
           </div>
           <p className="ticket-disclaimer">
-            Livraison en supplément, montant à confirmer avec le vendeur. Ce
-            ticket n’est pas une preuve de paiement.
+            Ce ticket n’est pas une preuve de paiement.{" "}
+            {order.shippingFee === undefined &&
+              "Ancienne commande : frais de livraison non enregistrés."}
           </p>
           <div className="ticket-checks">
             □ Préparé &nbsp;&nbsp; □ Vérifié &nbsp;&nbsp; □ Expédié
@@ -890,7 +910,7 @@ export default function Admin() {
                             </td>
                             <td>{o.customer.name}</td>
                             <td>{o.customer.city}</td>
-                            <td>{money(o.total)}</td>
+                            <td>{money(payable(o))}</td>
                             <td>
                               <span className={"status-badge " + o.status}>
                                 {STATUS[o.status]}
@@ -954,6 +974,8 @@ export default function Admin() {
                           "Ville",
                           "Adresse",
                           "Total produits (DH)",
+                          "Livraison (DH)",
+                          "Total enregistré (DH)",
                           "Statut",
                         ],
                         ...orderList.map((o) => [
@@ -964,6 +986,8 @@ export default function Admin() {
                           o.customer.city,
                           o.customer.address,
                           o.total,
+                          o.shippingFee ?? "Non renseignée",
+                          payable(o),
                           STATUS[o.status],
                         ]),
                       ],
@@ -1005,7 +1029,7 @@ export default function Admin() {
                               <small>{o.customer.phone}</small>
                             </td>
                             <td>{o.customer.city}</td>
-                            <td>{money(o.total)}</td>
+                            <td>{money(payable(o))}</td>
                             <td>
                               <select
                                 className={"status-select " + o.status}
@@ -1046,8 +1070,9 @@ export default function Admin() {
                 )}
               </section>
               <p className="admin-hint">
-                Vue limitée aux 1 000 dernières demandes. Les tickets n’incluent
-                pas de frais de livraison non confirmés.
+                Vue limitée aux 1 000 dernières demandes. Livraison incluse pour
+                les nouvelles demandes. Les anciennes commandes conservent leurs
+                montants enregistrés.
               </p>
             </>
           )}
@@ -1293,6 +1318,22 @@ export default function Admin() {
             <div className="order-detail-total">
               <span>Total produits, hors livraison</span>
               <strong>{money(detail.total)}</strong>
+            </div>
+            <div className="order-detail-total">
+              <span>Livraison</span>
+              <strong>
+                {detail.shippingFee === undefined
+                  ? "Non renseignée"
+                  : money(detail.shippingFee)}
+              </strong>
+            </div>
+            <div className="order-detail-total">
+              <strong>
+                {detail.grandTotal === undefined
+                  ? "Total enregistré"
+                  : "Total avec livraison"}
+              </strong>
+              <strong>{money(payable(detail))}</strong>
             </div>
             <label>
               Statut

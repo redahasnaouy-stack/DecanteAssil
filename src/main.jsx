@@ -1,3 +1,4 @@
+import { deliveryFee } from "../shared/delivery.js";
 import React, { useState, useEffect, useRef } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -255,6 +256,10 @@ function App() {
   }, [toast]);
   const count = cart.reduce((n, p) => n + p.qty, 0),
     total = cart.reduce((n, p) => n + p.qty * p.price, 0);
+  const shipping = cart.length
+    ? deliveryFee(form.cityOption === "casablanca" ? "Casablanca" : form.city)
+    : 0;
+  const grandTotal = Math.round((total + shipping) * 100) / 100;
   function collection(c = "Tous les parfums") {
     setCategory(c);
     setMenuOpen(false);
@@ -309,6 +314,7 @@ function App() {
     }
     let items = cart,
       finalTotal = total,
+      finalShipping = deliveryFee(city),
       reference = "";
     setSubmitting(true);
     try {
@@ -340,6 +346,7 @@ function App() {
           );
         items = result.items;
         finalTotal = result.total;
+        finalShipping = result.shippingFee ?? deliveryFee(city);
         reference = "DA-" + result.id.slice(0, 8).toUpperCase();
         setCart((old) =>
           old.map((p) => {
@@ -350,7 +357,7 @@ function App() {
           }),
         );
       }
-      const message = `Bonjour DecanteAssil ✨${reference ? "\nCommande : " + reference : ""}\nJe souhaite commander :\n\n${items.map((p) => `• ${p.brand} — ${p.name}\n  ${p.size} × ${p.qty} : ${money(p.price * p.qty)}`).join("\n")}\n\nSous-total indicatif : ${money(finalTotal)}\nLivraison, prix et disponibilité à confirmer.\n\nNom : ${form.name.trim()}\nTéléphone : ${form.phone.trim()}\nVille : ${city}\nAdresse : ${form.address.trim()}\n\nMerci de confirmer ma commande et le montant final.`;
+      const message = `Bonjour DecanteAssil ✨${reference ? "\nCommande : " + reference : ""}\nJe souhaite commander :\n\n${items.map((p) => `• ${p.brand} — ${p.name}\n  ${p.size} × ${p.qty} : ${money(p.price * p.qty)}`).join("\n")}\n\nSous-total indicatif : ${money(finalTotal)}\nLivraison : ${money(finalShipping)}\nTotal avec livraison : ${money(Math.round((finalTotal + finalShipping) * 100) / 100)}\nPrix et disponibilité à confirmer.\n\nNom : ${form.name.trim()}\nTéléphone : ${form.phone.trim()}\nVille : ${city}\nAdresse : ${form.address.trim()}\n\nMerci de confirmer ma commande et le montant final.`;
       const url = `https://wa.me/${PHONE}?text=${encodeURIComponent(message)}`;
       setOrderLink(url);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -557,8 +564,9 @@ function App() {
           <p className="price-note">
             Prix de lancement indicatifs, à confirmer avant validation. Les
             décants sont des conditionnements indépendants ; les visuels
-            montrent les flacons d’origine. Contenance des flacons complets et
-            frais de livraison à confirmer sur WhatsApp.
+            montrent les flacons d’origine. Contenance des flacons complets à
+            confirmer. Livraison : 20 DH à Casablanca et 35 DH dans les autres
+            villes.
           </p>
         </section>
         <section className="why-us" id="maison">
@@ -821,8 +829,7 @@ function App() {
           </div>
           <div className="cart-scroll">
             <p className="delivery-note">
-              Livraison au Maroc. Frais, prix et disponibilité confirmés sur
-              WhatsApp avant validation.
+              Livraison : 20 DH à Casablanca · 35 DH dans les autres villes.
             </p>
             {cart.length ? (
               <div className="cart-items">
@@ -920,7 +927,7 @@ function App() {
                         setForm({ ...form, cityOption: "casablanca" })
                       }
                     />
-                    Casablanca
+                    Casablanca (+20 DH)
                   </label>
                   <label
                     className={form.cityOption === "other" ? "chosen" : ""}
@@ -931,7 +938,7 @@ function App() {
                       checked={form.cityOption === "other"}
                       onChange={() => setForm({ ...form, cityOption: "other" })}
                     />
-                    Autre ville
+                    Autre ville (+35 DH)
                   </label>
                 </div>
               </fieldset>
@@ -962,6 +969,16 @@ function App() {
                   }
                 />
               </label>
+              <div className="delivery-summary" aria-live="polite">
+                <div>
+                  <span>Frais de livraison</span>
+                  <strong>{money(shipping)}</strong>
+                </div>
+                <div className="grand-total">
+                  <strong>Total avec livraison</strong>
+                  <strong>{money(grandTotal)}</strong>
+                </div>
+              </div>
               {error && (
                 <p className="error" role="alert">
                   {error}

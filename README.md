@@ -57,7 +57,7 @@ Les prix actuels sont des estimations de lancement, pas des relevés vérifiés 
 
 Destination : **+39 350 907 1813**, configurable en remplaçant `393509071813` dans `src/main.jsx`.
 
-Le client remplit nom, téléphone, ville et adresse. Le site ouvre WhatsApp avec le récapitulatif et le sous-total. **Le client doit envoyer le message**, puis le vendeur confirme prix, frais de livraison et disponibilité. Il n’y a ni paiement en ligne ni transmission automatique silencieuse. Avec D1 activé, une demande contenant les coordonnées et le panier est enregistrée côté serveur avant l’ouverture de WhatsApp. Le panier reste aussi conservé dans le navigateur. Sans D1 (mode statique), seul le message WhatsApp est préparé et aucun suivi serveur n’est disponible.
+Le client remplit nom, téléphone, ville et adresse. Le site ouvre WhatsApp avec le récapitulatif, le sous-total produits, la livraison et le total à régler. **Le client doit envoyer le message**, puis le vendeur confirme prix et disponibilité. La livraison coûte 20 DH à Casablanca et 35 DH dans les autres villes. Il n’y a ni paiement en ligne ni transmission automatique silencieuse. Avec D1 activé, une demande contenant les coordonnées et le panier est enregistrée côté serveur avant l’ouverture de WhatsApp. Le panier reste aussi conservé dans le navigateur. Sans D1 (mode statique), seul le message WhatsApp est préparé et aucun suivi serveur n’est disponible.
 
 ## Validation
 
@@ -70,7 +70,7 @@ Les cinq catégories ont des produits issus des photos fournies. Logo transparen
 
 ## Présentation de la boutique
 
-Interface crème et or inspirée des captures de référence fournies : logo centré, menu latéral, sections par catégorie et trois cartes produit par ligne sur ordinateur. Deux cartes par ligne sur mobile. Chaque carte propose le format et un ajout direct au panier. Le panier latéral regroupe les articles, les quantités et le formulaire de livraison (Casablanca ou autre ville). Les frais de livraison restent à confirmer sur WhatsApp ; aucun tarif du site de référence n’est appliqué automatiquement.
+Interface crème et or inspirée des captures de référence fournies : logo centré, menu latéral, sections par catégorie et trois cartes produit par ligne sur ordinateur. Deux cartes par ligne sur mobile. Chaque carte propose le format et un ajout direct au panier. Le panier latéral regroupe les articles, les quantités et le formulaire de livraison (Casablanca ou autre ville). Les frais de livraison sont de 20 DH à Casablanca et 35 DH dans les autres villes, selon les tarifs fixés par le vendeur. Le panier, WhatsApp et les tickets affichent le détail et le total avec livraison.
 
 Les descriptions sont dans `src/main.jsx`, les prix et les images du catalogue dans `public/catalog.json`. Le visuel de campagne `public/hero-perfume.png` a été retouché à partir d’une photo produit fournie ; les fiches conservent les photos originales du catalogue.
 
