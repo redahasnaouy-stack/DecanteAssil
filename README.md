@@ -24,6 +24,18 @@ Connecter ce dépôt GitHub à **Cloudflare Pages** (Workers & Pages → Create 
 
 Aucun backend, base de données ou secret n’est nécessaire. Ne pas ajouter de commande de déploiement Workers à ce projet Pages. Cloudflare republie le site après chaque push sur `main`.
 
+## Cloudflare Workers (configuration actuelle)
+
+Le dépôt inclut `wrangler.jsonc` pour servir le site statique sur Workers.
+
+Dans Settings → Build :
+
+- Build command : `npm run build`
+- Deploy command : `npx wrangler deploy --assets ./dist` (ou `npx wrangler deploy`)
+- Branche : `main`
+
+La date de compatibilité et le dossier `dist` sont déclarés dans le dépôt. Le lien `workers.dev` est activé par la configuration. Après le push, suivre le nouveau build dans Deployments ; un ancien build échoué conserve ses anciens fichiers.
+
 ## Modifier les produits et prix
 
 Modifier `public/catalog.json` directement sur GitHub (crayon → enregistrer le commit).
