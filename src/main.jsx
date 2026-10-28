@@ -20,13 +20,13 @@ import "./style.css";
 const Admin = React.lazy(() => import("./Admin.jsx"));
 const DEFAULT_PHONE = "393509071813";
 const categories = [
-  { name: "Parfum Nishe", title: "Décants parfums nishe", type: "niche" },
   {
     name: "Decante homme",
     title: "Décants parfums homme",
     type: "decant",
     gender: "homme",
   },
+  { name: "Parfum Nishe", title: "Décants parfums nishe", type: "niche" },
   {
     name: "Decante femme",
     title: "Décants parfums femme",
