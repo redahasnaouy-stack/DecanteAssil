@@ -20,7 +20,6 @@ import "./style.css";
 const Admin = React.lazy(() => import("./Admin.jsx"));
 const DEFAULT_PHONE = "393509071813";
 const categories = [
-  { name: "Oud", title: "L’univers du Oud", type: "oud" },
   { name: "Parfum Nishe", title: "Décants parfums nishe", type: "niche" },
   {
     name: "Decante homme",
@@ -46,6 +45,7 @@ const categories = [
     type: "full",
     gender: "femme",
   },
+  { name: "Oud", title: "L’univers du Oud", type: "oud" },
 ];
 const money = (n) => new Intl.NumberFormat("fr-MA").format(n) + " DH";
 const descriptions = {
